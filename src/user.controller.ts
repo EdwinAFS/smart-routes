@@ -19,12 +19,11 @@ export class UserController {
   })
   @ApiBody({ type: SyncUsersDto })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Users successfully synced',
-    type: [UserResponseDto],
   })
   @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
-  async sync(@Body() body: SyncUsersDto): Promise<User[]> {
+  async sync(@Body() body: SyncUsersDto): Promise<void> {
     return this.userService.sync(body.names);
   }
 

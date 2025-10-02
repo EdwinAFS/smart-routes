@@ -15,15 +15,12 @@ export class UserService {
     return this.userRepository.save(newUser);
   }
 
-  async sync(names: string[]): Promise<User[]> {
-    const users: User[] = [];
-
+  async sync(names: string[]): Promise<void> {
     for (const name of names) {
-      const savedUser = await this.userRepository.save({ name });
-      users.push(savedUser);
+      await this.userRepository.save({ name });
     }
 
-    return users;
+    return;
   }
 
   async getAll(): Promise<User[]> {
