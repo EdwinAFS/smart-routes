@@ -26,12 +26,19 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(
-    `Application is running on: http://localhost:${process.env.PORT ?? 3000}`,
-  );
-  console.log(
-    `Swagger documentation available at: http://localhost:${process.env.PORT ?? 3000}/api`,
-  );
+  // Enable CORS for Vercel
+  app.enableCors();
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Application is running on: http://localhost:${port}`);
+    console.log(
+      `Swagger documentation available at: http://localhost:${port}/api`,
+    );
+  }
 }
-bootstrap();
+
+// Export the bootstrap function for Vercel
+export default bootstrap;
