@@ -10,7 +10,7 @@ import { User } from './user.entity';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: '/tmp/smart-routes.db',
+      database: 'smart-routes.db',
       entities: [User],
       synchronize: true,
     }),
