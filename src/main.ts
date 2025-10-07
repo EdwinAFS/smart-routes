@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +23,7 @@ async function bootstrap() {
     .setDescription('API documentation for Smart Routes application')
     .setVersion('1.0')
     .addTag('users', 'User management endpoints')
+    .addTag('notifications', 'Push notification endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
