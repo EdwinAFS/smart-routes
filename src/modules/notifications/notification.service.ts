@@ -66,11 +66,16 @@ export class NotificationService implements OnModuleInit {
         'At least one FCM token is required. The PWA should send the token(s) in the request.',
       );
     }
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const millis = now.getMilliseconds().toString().padStart(3, '0');
 
     // Prepare the message
     const message: admin.messaging.MulticastMessage = {
       notification: {
-        title,
+        title: `${hours}:${minutes}:${seconds}.${millis} - ${title}`,
         body,
         ...(imageUrl && { imageUrl }),
       },
@@ -167,4 +172,3 @@ export class NotificationService implements OnModuleInit {
     });
   }
 }
-
