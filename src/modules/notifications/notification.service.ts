@@ -53,7 +53,7 @@ export class NotificationService implements OnModuleInit {
     failureCount: number;
     errors?: Array<{ token: string; error: string }>;
   }> {
-    const { title, body, tokens, imageUrl, data } = sendNotificationDto;
+    const { tokens, data } = sendNotificationDto;
 
     // Normalize tokens to array
     let tokenArray: string[] = [];
@@ -66,20 +66,15 @@ export class NotificationService implements OnModuleInit {
         'At least one FCM token is required. The PWA should send the token(s) in the request.',
       );
     }
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    const millis = now.getMilliseconds().toString().padStart(3, '0');
 
     // Prepare the message
     const message: admin.messaging.MulticastMessage = {
-      notification: {
-        title: `${hours}:${minutes}:${seconds}.${millis} - ${title}`,
-        body,
-        ...(imageUrl && { imageUrl }),
+      data: {
+        title: data.title,
+        body: data.body,
+        ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
+        variables: data.variables ? JSON.stringify(data.variables) : '{}',
       },
-      data: data ? this.convertDataToStrings(data) : {},
       tokens: tokenArray,
     };
 

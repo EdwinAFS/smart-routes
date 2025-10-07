@@ -49,8 +49,8 @@ async function bootstrap() {
   await app.listen(port);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Application is running on: http://localhost:${port}`);
-    console.log(
+    console.info(`Application is running on: http://localhost:${port}`);
+    console.info(
       `Swagger documentation available at: http://localhost:${port}/api`,
     );
   }
