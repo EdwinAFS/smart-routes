@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import * as admin from 'firebase-admin';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { RegisterTokenDto } from './dto/register-token.dto';
-import { DeviceToken } from './device-token.entity';
+import { DeviceToken } from './entities/device-token.entity';
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
@@ -167,3 +167,4 @@ export class NotificationService implements OnModuleInit {
     });
   }
 }
+

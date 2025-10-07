@@ -10,7 +10,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { NotificationService } from './notification.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { RegisterTokenDto } from './dto/register-token.dto';
-import { DeviceToken } from './device-token.entity';
+import { DeviceToken } from './entities/device-token.entity';
 
 @ApiTags('notifications')
 @Controller('notifications')
@@ -99,3 +99,4 @@ export class NotificationController {
     return this.notificationService.sendNotification(sendNotificationDto);
   }
 }
+

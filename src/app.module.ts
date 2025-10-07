@@ -2,12 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { User } from './user.entity';
-import { NotificationController } from './notification.controller';
-import { NotificationService } from './notification.service';
-import { DeviceToken } from './device-token.entity';
+import { UserModule } from './modules/users/user.module';
+import { NotificationModule } from './modules/notifications/notification.module';
+import { User } from './modules/users/entities/user.entity';
+import { DeviceToken } from './modules/notifications/entities/device-token.entity';
 
 @Module({
   imports: [
@@ -17,9 +15,10 @@ import { DeviceToken } from './device-token.entity';
       entities: [User, DeviceToken],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, DeviceToken]),
+    UserModule,
+    NotificationModule,
   ],
-  controllers: [AppController, UserController, NotificationController],
-  providers: [AppService, UserService, NotificationService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

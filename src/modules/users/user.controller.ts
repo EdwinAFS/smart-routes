@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SyncUsersDto } from './dto/sync-users.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -62,3 +62,4 @@ export class UserController {
     return this.userService.create(body.name);
   }
 }
+
