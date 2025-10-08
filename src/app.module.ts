@@ -6,6 +6,7 @@ import { UserModule } from './modules/users/user.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { User } from './modules/users/entities/user.entity';
 import { DeviceToken } from './modules/notifications/entities/device-token.entity';
+import { DirectionModule } from './modules/directions/direction.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DeviceToken } from './modules/notifications/entities/device-token.entit
     }),
     UserModule,
     NotificationModule,
+    DirectionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
