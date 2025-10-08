@@ -16,6 +16,14 @@ export class SendNotificationVariablesDto {
   body: string;
 
   @ApiPropertyOptional({
+    description: 'Link to open when the user clicks on the notification',
+    example: 'https://tusitio.com',
+  })
+  @IsOptional()
+  @IsString()
+  link?: string;
+
+  @ApiPropertyOptional({
     description: 'Image URL for the notification',
     example:
       'https://i.pinimg.com/originals/db/2a/4d/db2a4d7fb7efb0ba5d3ea67ab99581a7.jpg',
@@ -45,13 +53,7 @@ export class SendNotificationDto {
 
   @ApiProperty({
     description: 'Variables to send with the notification',
-    example: {
-      title: 'Nueva ruta disponible',
-      body: 'Se ha creado una nueva ruta cerca de tu ubicación',
-      imageUrl:
-        'https://i.pinimg.com/originals/db/2a/4d/db2a4d7fb7efb0ba5d3ea67ab99581a7.jpg',
-      variables: { routeId: '123', action: 'view' },
-    },
+    type: () => SendNotificationVariablesDto,
   })
   @IsObject()
   data: SendNotificationVariablesDto;

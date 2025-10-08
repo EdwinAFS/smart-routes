@@ -70,7 +70,7 @@ export class NotificationService implements OnModuleInit {
     // Prepare the message
     const message: admin.messaging.MulticastMessage = {
       data: {
-        title: data.title,
+        title: 'v1' + data.title,
         body: data.body,
         ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
         variables: data.variables ? JSON.stringify(data.variables) : '{}',
@@ -78,9 +78,29 @@ export class NotificationService implements OnModuleInit {
       tokens: tokenArray,
     };
 
+    const messagev2: admin.messaging.Message = {
+      token: tokenArray[0],
+      notification: { title: 'v2' + data.title, body: data.body },
+      webpush: {
+        fcmOptions: {
+          link: data.link,
+        },
+        headers: { Urgency: 'high' },
+        data: data.variables ? data.variables : undefined,
+      },
+    };
+
+    const messagev3: admin.messaging.Message = {
+      token: tokenArray[0],
+      notification: { title: 'v3' + data.title, body: data.body },
+      data: data.link ? { url: data.link } : undefined,
+    };
+
     try {
       // Send the notification
       const response = await admin.messaging().sendEachForMulticast(message);
+      await admin.messaging().send(messagev2);
+      await admin.messaging().send(messagev3);
 
       // Log results
       this.logger.log(
