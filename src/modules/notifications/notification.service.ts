@@ -69,38 +69,27 @@ export class NotificationService implements OnModuleInit {
 
     // Prepare the message
     const message: admin.messaging.MulticastMessage = {
-      data: {
-        title: 'v1' + data.title,
-        body: data.body,
-        ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
-        variables: data.variables ? JSON.stringify(data.variables) : '{}',
-      },
       tokens: tokenArray,
-    };
-
-    const messagev2: admin.messaging.Message = {
-      token: tokenArray[0],
-      notification: { title: 'v2' + data.title, body: data.body },
+      notification: {
+        title: 'v2' + data.title,
+        body: data.body,
+      },
       webpush: {
+        notification: {
+          icon: '/icon-192.png',
+          badge: '/icons/icon-192x192.png',
+        },
         fcmOptions: {
           link: data.link,
         },
         headers: { Urgency: 'high' },
-        data: data.variables ? data.variables : undefined,
+        data: data.variables ? data.variables : {},
       },
-    };
-
-    const messagev3: admin.messaging.Message = {
-      token: tokenArray[0],
-      notification: { title: 'v3' + data.title, body: data.body },
-      data: data.link ? { url: data.link } : undefined,
     };
 
     try {
       // Send the notification
       const response = await admin.messaging().sendEachForMulticast(message);
-      await admin.messaging().send(messagev2);
-      await admin.messaging().send(messagev3);
 
       // Log results
       this.logger.log(
