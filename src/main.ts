@@ -24,6 +24,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('users', 'User management endpoints')
     .addTag('notifications', 'Push notification endpoints')
+    .addTag('owntracks', 'OwnTracks location tracking endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

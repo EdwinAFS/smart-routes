@@ -7,18 +7,21 @@ import { NotificationModule } from './modules/notifications/notification.module'
 import { User } from './modules/users/entities/user.entity';
 import { DeviceToken } from './modules/notifications/entities/device-token.entity';
 import { DirectionModule } from './modules/directions/direction.module';
+import { OwnTracksModule } from './modules/owntracks/owntracks.module';
+import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: '/tmp/smart-routes.db',
-      entities: [User, DeviceToken],
+      entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
     UserModule,
     NotificationModule,
     DirectionModule,
+    OwnTracksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
