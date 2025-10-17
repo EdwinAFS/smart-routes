@@ -2,30 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OwnTracksPayload } from './entities/owntracks-payload.entity';
-/*
-"payload": {
-      "_type": "location",
-      "BSSID": "a8:29:48:3f:d3:33",
-      "SSID": "Hi",
-      "_id": "af43acf3",
-      "acc": 13,
-      "alt": 982,
-      "batt": 39,
-      "bs": 1,
-      "cog": 6,
-      "conn": "w",
-      "created_at": 1760716552,
-      "lat": 3.4220044,
-      "lon": -76.4646787,
-      "m": 1,
-      "source": "fused",
-      "tid": "et",
-      "topic": "owntracks/user/edwin1",
-      "tst": 1760716552,
-      "vac": 0,
-      "vel": 4
-    }
-*/
 
 interface OwnTracksPayloadResponse {
   _type: string;
@@ -54,7 +30,7 @@ export class OwnTracksService {
     return this.ownTracksPayloadRepository.save(ownTracksPayload);
   }
 
-  async getAllPayloads(): Promise<any[]> {
+  async getAllPayloads(): Promise<any> {
     const payloads = await this.ownTracksPayloadRepository.find({
       order: { receivedAt: 'DESC' },
     });
@@ -65,7 +41,7 @@ export class OwnTracksService {
       return data;
     });
 
-    return dataFiltered.map((payload: OwnTracksPayload) => {
+    const dataMapped = dataFiltered.map((payload: OwnTracksPayload) => {
       const payloadData = JSON.parse(payload.payload) as Record<string, any>;
       const data = payloadData.payload as OwnTracksPayloadResponse;
 
@@ -79,6 +55,11 @@ export class OwnTracksService {
         name: this.generateName(),
       };
     });
+
+    return {
+      originalData: payloads,
+      data: dataMapped,
+    };
   }
 
   private generateName() {
