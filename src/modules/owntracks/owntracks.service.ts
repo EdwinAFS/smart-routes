@@ -37,8 +37,7 @@ export class OwnTracksService {
 
     const dataFiltered = payloads.filter((payload: OwnTracksPayload) => {
       const payloadData = JSON.parse(payload.payload) as Record<string, any>;
-      const data = payloadData.payload as OwnTracksPayloadResponse;
-      return data;
+      return payloadData;
     });
 
     const dataMapped = dataFiltered.map((payload: OwnTracksPayload) => {

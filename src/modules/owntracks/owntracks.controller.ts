@@ -29,7 +29,7 @@ export class OwnTracksController {
   @Get('payloads')
   @ApiOperation({ summary: 'Get all received payloads' })
   @ApiResponse({ status: 200, description: 'List of all payloads' })
-  async getAllPayloads() {
+  async getAllPayloads(): Promise<any> {
     return this.ownTracksService.getAllPayloads();
   }
 }
