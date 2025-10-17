@@ -62,7 +62,7 @@ export class OwnTracksService {
     const dataFiltered = payloads.filter((payload: OwnTracksPayload) => {
       const payloadData = JSON.parse(payload.payload) as Record<string, any>;
       const data = payloadData.payload as OwnTracksPayloadResponse;
-      return data?._type === 'location';
+      return data;
     });
 
     return dataFiltered.map((payload: OwnTracksPayload) => {
@@ -72,6 +72,7 @@ export class OwnTracksService {
       console.log('data', data);
 
       return {
+        _type: data._type,
         id: data.topic.split('/')[2],
         lat: data.lat.toString(),
         lng: data.lon.toString(),
