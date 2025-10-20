@@ -24,8 +24,6 @@ export class OwnTracksService {
   ): Promise<OwnTracksPayload> {
     const ownTracksPayload = new OwnTracksPayload();
 
-    console.log('payload', payload);
-
     ownTracksPayload.payload = JSON.stringify(payload, null, 2);
     ownTracksPayload.userAgent = userAgent || '';
 
