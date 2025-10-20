@@ -3,13 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OwnTracksPayload } from './entities/owntracks-payload.entity';
 
-interface OwnTracksPayloadResponse {
+interface OwnTracksLocationData {
   _type: string;
-  id: string;
   topic: string;
   lat: number;
   lon: number;
-  name: string;
+  [key: string]: any;
 }
 
 @Injectable()
@@ -24,46 +23,72 @@ export class OwnTracksService {
     userAgent?: string,
   ): Promise<OwnTracksPayload> {
     const ownTracksPayload = new OwnTracksPayload();
+
+    console.log('payload', payload);
+
     ownTracksPayload.payload = JSON.stringify(payload, null, 2);
     ownTracksPayload.userAgent = userAgent || '';
 
     return this.ownTracksPayloadRepository.save(ownTracksPayload);
   }
 
-  async getAllPayloads(): Promise<any> {
+  async getAllPayloads(): Promise<any[]> {
     const payloads = await this.ownTracksPayloadRepository.find({
       order: { receivedAt: 'DESC' },
     });
 
     const dataFiltered = payloads.filter((payload: OwnTracksPayload) => {
-      const payloadData = JSON.parse(payload.payload) as Record<string, any>;
-      const data = payloadData.payload as OwnTracksPayloadResponse;
-      return data;
+      try {
+        // Handle both string and object payloads
+        const dataTrack: unknown =
+          typeof payload.payload === 'string'
+            ? JSON.parse(payload.payload)
+            : payload.payload;
+
+        // Type guard to check if data is OwnTracksLocationData
+        const isLocationData = (obj: unknown): obj is OwnTracksLocationData => {
+          return (
+            typeof obj === 'object' &&
+            obj !== null &&
+            '_type' in obj &&
+            (obj as Record<string, unknown>)._type === 'location' &&
+            'lat' in obj &&
+            'lon' in obj &&
+            typeof (obj as Record<string, unknown>).lat === 'number' &&
+            typeof (obj as Record<string, unknown>).lon === 'number'
+          );
+        };
+
+        // Only include location type payloads that have coordinates
+        return isLocationData(dataTrack);
+      } catch (error) {
+        console.error('Error parsing payload:', error);
+        return false;
+      }
     });
 
     const dataMapped = dataFiltered.map((payload: OwnTracksPayload) => {
-      const payloadData = JSON.parse(payload.payload) as Record<string, any>;
-      const data = payloadData.payload as OwnTracksPayloadResponse;
-
-      console.log('data', data);
+      // Handle both string and object payloads
+      const data: OwnTracksLocationData = (
+        typeof payload.payload === 'string'
+          ? JSON.parse(payload.payload)
+          : payload.payload
+      ) as OwnTracksLocationData;
 
       return {
         _type: data._type,
-        id: data.topic.split('/')[2],
+        id: data.topic.split('/')[2] || 'unknown',
         lat: data.lat.toString(),
         lng: data.lon.toString(),
         name: this.generateName(),
       };
     });
 
-    return {
-      originalData: payloads,
-      data: dataMapped,
-    };
+    return dataMapped;
   }
 
   private generateName() {
-    const nameList = ['Edwin', 'Moonie', 'Arnulfo'];
+    const nameList = ['Edwin', 'Moonie'];
 
     return nameList[Math.floor(Math.random() * nameList.length)];
   }

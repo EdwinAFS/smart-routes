@@ -14,7 +14,7 @@ import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: '/tmp/smart-routes.db',
+      database: './tmp/smart-routes.db',
       entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
