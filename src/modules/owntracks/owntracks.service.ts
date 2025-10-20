@@ -37,7 +37,8 @@ export class OwnTracksService {
 
     const dataFiltered = payloads.filter((payload: OwnTracksPayload) => {
       const payloadData = JSON.parse(payload.payload) as Record<string, any>;
-      return payloadData;
+      const data = payloadData.payload as OwnTracksPayloadResponse;
+      return data;
     });
 
     const dataMapped = dataFiltered.map((payload: OwnTracksPayload) => {
@@ -62,25 +63,7 @@ export class OwnTracksService {
   }
 
   private generateName() {
-    const nameList = [
-      'Time',
-      'Past',
-      'Future',
-      'Dev',
-      'Fly',
-      'Flying',
-      'Soar',
-      'Soaring',
-      'Power',
-      'Falling',
-      'Fall',
-      'Jump',
-      'Cliff',
-      'Mountain',
-      'Rend',
-      'Red',
-      'Blue',
-    ];
+    const nameList = ['Edwin', 'Moonie', 'Arnulfo'];
 
     return nameList[Math.floor(Math.random() * nameList.length)];
   }
