@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OwnTracksPayload } from './entities/owntracks-payload.entity';
+import { LocationGateway } from './location.gateway';
 
 interface OwnTracksLocationData {
   _type: string;
@@ -16,7 +17,26 @@ export class OwnTracksService {
   constructor(
     @InjectRepository(OwnTracksPayload)
     private ownTracksPayloadRepository: Repository<OwnTracksPayload>,
+    private readonly locationGateway: LocationGateway,
   ) {}
+
+  // Type guard para validar que el payload es de tipo location
+  private isLocationPayload(
+    payload: unknown,
+  ): payload is OwnTracksLocationData {
+    return (
+      typeof payload === 'object' &&
+      payload !== null &&
+      '_type' in payload &&
+      (payload as Record<string, unknown>)._type === 'location' &&
+      'lat' in payload &&
+      'lon' in payload &&
+      'topic' in payload &&
+      typeof (payload as Record<string, unknown>).lat === 'number' &&
+      typeof (payload as Record<string, unknown>).lon === 'number' &&
+      typeof (payload as Record<string, unknown>).topic === 'string'
+    );
+  }
 
   async savePayload(
     payload: any,
@@ -27,7 +47,28 @@ export class OwnTracksService {
     ownTracksPayload.payload = JSON.stringify(payload, null, 2);
     ownTracksPayload.userAgent = userAgent || '';
 
-    return this.ownTracksPayloadRepository.save(ownTracksPayload);
+    const saved = await this.ownTracksPayloadRepository.save(ownTracksPayload);
+
+    // Emitir la nueva ubicación en tiempo real vía WebSocket
+    try {
+      // Check if it's a location type payload using type guard
+      if (this.isLocationPayload(payload)) {
+        const id = payload.topic.split('/')[2] || 'unknown';
+        const locationUpdate = {
+          _type: payload._type,
+          id: payload.topic.split('/')[2] || 'unknown',
+          lat: payload.lat.toString(),
+          lng: payload.lon.toString(),
+          name: id,
+          timestamp: saved.receivedAt.toISOString(),
+        };
+        this.locationGateway.sendLocationUpdate(locationUpdate);
+      }
+    } catch (error) {
+      console.error('Error emitiendo ubicación via WebSocket:', error);
+    }
+
+    return saved;
   }
 
   async getAllPayloads(): Promise<any[]> {
@@ -73,21 +114,17 @@ export class OwnTracksService {
           : payload.payload
       ) as OwnTracksLocationData;
 
+      const id = data.topic.split('/')[2] || 'unknown';
+
       return {
         _type: data._type,
-        id: data.topic.split('/')[2] || 'unknown',
+        id: id,
         lat: data.lat.toString(),
         lng: data.lon.toString(),
-        name: this.generateName(),
+        name: id,
       };
     });
 
     return dataMapped;
-  }
-
-  private generateName() {
-    const nameList = ['Edwin', 'Moonie'];
-
-    return nameList[Math.floor(Math.random() * nameList.length)];
   }
 }

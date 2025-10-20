@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Routes - Monitor de Ubicaciones</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+        }
+
+        .status-indicator.disconnected {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .count {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .locations-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .locations-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .locations-header h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .clear-btn {
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .clear-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .locations-list {
+            display: grid;
+            gap: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .locations-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .locations-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .locations-list::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .locations-list::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        .location-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .location-card.removing {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        .location-icon {
+            font-size: 2.5rem;
+        }
+
+        .location-info {
+            flex: 1;
+        }
+
+        .location-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .location-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        .location-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .location-detail strong {
+            opacity: 0.8;
+        }
+
+        .location-timestamp {
+            text-align: right;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .location-time {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .location-date {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .location-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .location-details {
+                grid-template-columns: 1fr;
+            }
+
+            .location-timestamp {
+                text-align: center;
+            }
+
+            .status-bar {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📍 Smart Routes - Monitor en Tiempo Real</h1>
+            <p>Visualización de ubicaciones recibidas por WebSocket</p>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-indicator disconnected" id="statusIndicator"></div>
+                    <span class="status-text" id="statusText">Desconectado</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-text">Ubicaciones:</span>
+                    <span class="count" id="locationCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-text">Clientes conectados:</span>
+                    <span class="count" id="clientsCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-text">Límite:</span>
+                    <span class="count">30</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locations Container -->
+        <div class="locations-container">
+            <div class="locations-header">
+                <h2>Últimas Ubicaciones</h2>
+                <button class="clear-btn" id="clearBtn">🗑️ Limpiar Todo</button>
+            </div>
+            
+            <div class="locations-list" id="locationsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📡</div>
+                    <h3>Esperando ubicaciones...</h3>
+                    <p>Las ubicaciones aparecerán aquí en tiempo real cuando se reciban datos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // ========================================
+        // CONFIGURACIÓN
+        // ========================================
+        const SOCKET_URL = 'http://localhost:3000';
+        const MAX_LOCATIONS = 30;
+        
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        let socket;
+        let locations = [];
+        let totalReceived = 0;
+
+        // ========================================
+        // ELEMENTOS DOM
+        // ========================================
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const locationCount = document.getElementById('locationCount');
+        const clientsCount = document.getElementById('clientsCount');
+        const locationsList = document.getElementById('locationsList');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        function init() {
+            initSocket();
+            initEventListeners();
+        }
+
+        // ========================================
+        // SOCKET.IO
+        // ========================================
+        function initSocket() {
+            socket = io(`${SOCKET_URL}/locations`, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5
+            });
+
+            socket.on('connect', () => {
+                updateConnectionStatus(true);
+                console.log('✅ Conectado al servidor WebSocket');
+            });
+
+            socket.on('disconnect', () => {
+                updateConnectionStatus(false);
+                console.log('❌ Desconectado del servidor');
+            });
+
+            socket.on('connect_error', (error) => {
+                updateConnectionStatus(false);
+                console.error('Error de conexión:', error);
+            });
+
+            // Escuchar nueva ubicación individual
+            socket.on('locationUpdate', (location) => {
+                console.log('📍 Nueva ubicación recibida:', location);
+                addLocation(location);
+            });
+
+            // Escuchar conteo de clientes
+            socket.on('clientsCount', (count) => {
+                clientsCount.textContent = count;
+            });
+        }
+
+        // ========================================
+        // GESTIÓN DE UBICACIONES
+        // ========================================
+        function addLocation(location) {
+            totalReceived++;
+            
+            // Agregar al inicio del array
+            locations.unshift({
+                ...location,
+                receivedAt: new Date()
+            });
+
+            // Mantener solo las últimas MAX_LOCATIONS
+            if (locations.length > MAX_LOCATIONS) {
+                const removed = locations.pop();
+                removeLocationCard(removed);
+            }
+
+            // Actualizar UI
+            updateLocationCount();
+            renderLocation(location);
+        }
+
+        function renderLocation(location) {
+            // Remover empty state si existe
+            const emptyState = locationsList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Crear card
+            const card = createLocationCard(location);
+            
+            // Insertar al inicio
+            locationsList.insertBefore(card, locationsList.firstChild);
+        }
+
+        function createLocationCard(location) {
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            card.dataset.id = location.id;
+            card.dataset.timestamp = location.timestamp || new Date().toISOString();
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES');
+            const dateString = now.toLocaleDateString('es-ES');
+
+            card.innerHTML = `
+                <div class="location-icon">📍</div>
+                <div class="location-info">
+                    <div class="location-name">${location.name || 'Usuario Desconocido'}</div>
+                    <div class="location-details">
+                        <div class="location-detail">
+                            <strong>ID:</strong>
+                            <span>${location.id}</span>
+                        </div>
+                        <div class="location-detail">
+                            <strong>Lat:</strong>
+                            <span>${location.lat}</span>
+                        </div>
+                        <div class="location-detail">
+                            <strong>Lng:</strong>
+                            <span>${location.lng}</span>
+                        </div>
+                        <div class="location-detail">
+                            <strong>Tipo:</strong>
+                            <span>${location._type || 'location'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="location-timestamp">
+                    <span class="location-time">⏰ ${timeString}</span>
+                    <span class="location-date">📅 ${dateString}</span>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function removeLocationCard(location) {
+            const card = locationsList.querySelector(`[data-timestamp="${location.timestamp}"]`);
+            if (card) {
+                card.classList.add('removing');
+                setTimeout(() => {
+                    card.remove();
+                }, 300);
+            }
+        }
+
+        function clearAllLocations() {
+            locations = [];
+            updateLocationCount();
+            
+            // Animar salida de todas las cards
+            const cards = locationsList.querySelectorAll('.location-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('removing');
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Si es la última, mostrar empty state
+                        if (index === cards.length - 1) {
+                            showEmptyState();
+                        }
+                    }, 300);
+                }, index * 50);
+            });
+        }
+
+        function showEmptyState() {
+            locationsList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📡</div>
+                    <h3>Esperando ubicaciones...</h3>
+                    <p>Las ubicaciones aparecerán aquí en tiempo real cuando se reciban datos</p>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // UI UPDATES
+        // ========================================
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                statusIndicator.className = 'status-indicator connected';
+                statusText.textContent = 'Conectado';
+            } else {
+                statusIndicator.className = 'status-indicator disconnected';
+                statusText.textContent = 'Desconectado';
+            }
+        }
+
+        function updateLocationCount() {
+            locationCount.textContent = locations.length;
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        function initEventListeners() {
+            clearBtn.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que quieres limpiar todas las ubicaciones?')) {
+                    clearAllLocations();
+                }
+            });
+        }
+
+        // ========================================
+        // INICIO
+        // ========================================
+        init();
+
+        // Debug info
+        console.log('🚀 Smart Routes Monitor iniciado');
+        console.log('📡 Conectando a:', `${SOCKET_URL}/locations`);
+        console.log('📊 Límite de ubicaciones:', MAX_LOCATIONS);
+    </script>
+</body>
+</html>
+

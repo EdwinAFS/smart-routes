@@ -45,7 +45,6 @@ async function bootstrap() {
 
   // Enable CORS for Vercel
   app.enableCors();
-
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
@@ -53,6 +52,9 @@ async function bootstrap() {
     console.info(`Application is running on: http://localhost:${port}`);
     console.info(
       `Swagger documentation available at: http://localhost:${port}/api`,
+    );
+    console.info(
+      `WebSocket monitor available at: http://localhost:${port}/index.html`,
     );
   }
 }

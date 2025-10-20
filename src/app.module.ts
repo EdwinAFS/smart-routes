@@ -9,9 +9,14 @@ import { DeviceToken } from './modules/notifications/entities/device-token.entit
 import { DirectionModule } from './modules/directions/direction.module';
 import { OwnTracksModule } from './modules/owntracks/owntracks.module';
 import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'tmp/smart-routes.db',
