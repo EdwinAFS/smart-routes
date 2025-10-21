@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { OwnTracksPayload } from './entities/owntracks-payload.entity';
 import { LocationGateway } from './location.gateway';
 
@@ -126,5 +126,69 @@ export class OwnTracksService {
     });
 
     return dataMapped;
+  }
+
+  async getTrackerStatus(deviceId: string): Promise<{
+    isActive: boolean;
+    deviceId: string;
+    lastUpdate: Date | null;
+    secondsSinceLastUpdate: number | null;
+  }> {
+    // Obtener todos los payloads ordenados por fecha descendente y de los ultimo minuto
+    const payloads = await this.ownTracksPayloadRepository.find({
+      where: {
+        receivedAt: MoreThan(new Date(Date.now() - 60000)),
+      },
+      order: { receivedAt: 'DESC' },
+    });
+
+    // Buscar el último payload que corresponda al deviceId
+    let lastPayload: OwnTracksPayload | null = null;
+
+    for (const payload of payloads) {
+      try {
+        const dataTrack: unknown =
+          typeof payload.payload === 'string'
+            ? JSON.parse(payload.payload)
+            : payload.payload;
+
+        if (this.isLocationPayload(dataTrack)) {
+          const id = dataTrack.topic.split('/')[2] || 'unknown';
+          if (id === deviceId) {
+            lastPayload = payload;
+            break;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing payload:', error);
+      }
+    }
+
+    // Si no se encontró ningún payload para el dispositivo
+    if (!lastPayload) {
+      return {
+        isActive: false,
+        deviceId,
+        lastUpdate: null,
+        secondsSinceLastUpdate: null,
+      };
+    }
+
+    // Calcular la diferencia de tiempo en segundos
+    const now = new Date();
+    const lastUpdate = lastPayload.receivedAt;
+    const timeDifference = Math.floor(
+      (now.getTime() - lastUpdate.getTime()) / 1000,
+    );
+
+    // Verificar si fue en los últimos 30 segundos
+    const isActive = timeDifference <= 30;
+
+    return {
+      isActive,
+      deviceId,
+      lastUpdate,
+      secondsSinceLastUpdate: timeDifference,
+    };
   }
 }
