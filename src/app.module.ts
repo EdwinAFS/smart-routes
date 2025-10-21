@@ -12,11 +12,16 @@ import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { tmpdir } from 'os';
 
-const folderExists = existsSync(join(__dirname, '..', 'tmp'));
+// Use /tmp in serverless environments (Lambda/Vercel), local tmp otherwise
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const tmpPath = isServerless
+  ? join(tmpdir(), 'smart-routes')
+  : join(__dirname, '..', 'tmp');
 
-if (!folderExists) {
-  mkdirSync(join(__dirname, '..', 'tmp'));
+if (!existsSync(tmpPath)) {
+  mkdirSync(tmpPath, { recursive: true });
 }
 
 @Module({
@@ -26,7 +31,7 @@ if (!folderExists) {
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: join(__dirname, '..', 'tmp', 'smart-routes.db'),
+      database: join(tmpPath, 'smart-routes.db'),
       entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
