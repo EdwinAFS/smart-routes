@@ -11,6 +11,13 @@ import { OwnTracksModule } from './modules/owntracks/owntracks.module';
 import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
+
+const folderExists = existsSync(join(__dirname, '..', 'tmp'));
+
+if (!folderExists) {
+  mkdirSync(join(__dirname, '..', 'tmp'), { recursive: true });
+}
 
 @Module({
   imports: [
