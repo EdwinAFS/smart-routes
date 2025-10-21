@@ -43,7 +43,7 @@ async function bootstrap() {
     ],
   });
 
-  // Enable CORS for Vercel
+  // Enable CORS for all origins
   app.enableCors();
   const port = process.env.PORT || 3000;
   await app.listen(port);
@@ -59,5 +59,5 @@ async function bootstrap() {
   }
 }
 
-// Export the bootstrap function for Vercel
+// Start the application
 bootstrap();

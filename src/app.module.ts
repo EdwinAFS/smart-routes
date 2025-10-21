@@ -14,11 +14,23 @@ import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { tmpdir } from 'os';
 
-// Use /tmp in serverless environments (Lambda/Vercel), local tmp otherwise
+// Determine the appropriate path for temporary/database files based on environment
+// - Serverless (Vercel/Lambda): Use system /tmp (ephemeral)
+// - Railway: Use /data volume if mounted, otherwise local tmp
+// - Local development: Use local tmp directory
 const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
-const tmpPath = isServerless
-  ? join(tmpdir(), 'smart-routes')
-  : join(__dirname, '..', 'tmp');
+const isRailway = process.env.RAILWAY_ENVIRONMENT;
+
+let tmpPath: string;
+if (isServerless) {
+  tmpPath = join(tmpdir(), 'smart-routes');
+} else if (isRailway && existsSync('/data')) {
+  // Railway with mounted volume
+  tmpPath = '/data';
+} else {
+  // Local development or Railway without volume
+  tmpPath = join(__dirname, '..', 'tmp');
+}
 
 if (!existsSync(tmpPath)) {
   mkdirSync(tmpPath, { recursive: true });
