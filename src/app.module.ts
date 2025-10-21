@@ -16,7 +16,7 @@ import { existsSync, mkdirSync } from 'fs';
 const folderExists = existsSync(join(__dirname, '..', 'tmp'));
 
 if (!folderExists) {
-  mkdirSync(join(__dirname, '..', 'tmp'), { recursive: true });
+  mkdirSync(join(__dirname, '..', 'tmp'));
 }
 
 @Module({
