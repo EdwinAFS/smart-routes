@@ -19,7 +19,7 @@ import { join } from 'path';
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'tmp/smart-routes.db',
+      database: './tmp/smart-routes.db',
       entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
