@@ -45,7 +45,8 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
-tmp
+tmp/smart-routes.db
+
 
 # Runtime data
 pids
