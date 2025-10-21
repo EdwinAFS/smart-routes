@@ -26,7 +26,7 @@ if (!folderExists) {
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: './tmp/smart-routes.db',
+      database: join(__dirname, '..', 'tmp', 'smart-routes.db'),
       entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
