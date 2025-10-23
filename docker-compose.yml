@@ -2,12 +2,12 @@ services:
   smart-routes:
     build:
       context: .
-      dockerfile: Dockerfile       
-      target: development
+      dockerfile: Dockerfile
+      target: production
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=3000
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       - FIREBASE_CREDENTIALS_JSON=${FIREBASE_CREDENTIALS_JSON}
@@ -20,7 +20,6 @@ services:
     volumes:
       - ./tmp:/app/tmp
       - ./public:/app/public
-      - ./src:/app/src
     networks:
       - smart-routes-network
     restart: unless-stopped

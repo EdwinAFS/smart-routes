@@ -9,6 +9,9 @@ import { DeviceToken } from './modules/notifications/entities/device-token.entit
 import { DirectionModule } from './modules/directions/direction.module';
 import { OwnTracksModule } from './modules/owntracks/owntracks.module';
 import { OwnTracksPayload } from './modules/owntracks/entities/owntracks-payload.entity';
+import { OrdersModule } from './modules/orders/orders.module';
+import { Order } from './modules/orders/entities/order.entity';
+import { OrderPoint } from './modules/orders/entities/order-point.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
@@ -55,13 +58,14 @@ if (!existsSync(tmpPath)) {
       host: process.env.DATABASE_HOST,
       ssl: process.env.DATABASE_SSL === 'true',
 
-      entities: [User, DeviceToken, OwnTracksPayload],
+      entities: [User, DeviceToken, OwnTracksPayload, Order, OrderPoint],
       synchronize: true,
     }),
     UserModule,
     NotificationModule,
     DirectionModule,
     OwnTracksModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

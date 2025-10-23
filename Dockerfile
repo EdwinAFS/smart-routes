@@ -16,6 +16,24 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Development stage
+FROM node:18-alpine AS development
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only development dependencies
+RUN npm ci --only=development
+
+# Copy source code
+COPY . .
+
+# Start the application
+CMD ["npm", "run", "start:dev"]
+
 # Production stage
 FROM node:18-alpine AS production
 
