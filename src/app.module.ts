@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { tmpdir } from 'os';
+import { ConfigModule } from '@nestjs/config';
 
 // Determine the appropriate path for temporary/database files based on environment
 // - Serverless (Vercel/Lambda): Use system /tmp (ephemeral)
@@ -38,12 +39,22 @@ if (!existsSync(tmpPath)) {
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
     TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: join(tmpPath, 'smart-routes.db'),
+      type: 'postgres',
+
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      port: parseInt(process.env.DATABASE_PORT || '5432'),
+      host: process.env.DATABASE_HOST,
+      ssl: process.env.DATABASE_SSL === 'true',
+
       entities: [User, DeviceToken, OwnTracksPayload],
       synchronize: true,
     }),
