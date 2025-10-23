@@ -86,10 +86,19 @@ export class OrdersService implements OnModuleInit {
   }
 
   async optimizeRoute(
-    orderId: number,
+    driverName: string,
     takeOrderDto: TakeOrderDto,
   ): Promise<{ mapsUrl: string; routes: Route[] }> {
-    const order = await this.findOne(orderId);
+    const order = await this.orderRepository.findOne({
+      where: { driverName, status: OrderStatus.PENDING },
+      relations: ['orderPoints'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        `Order with driver name ${driverName} not found`,
+      );
+    }
 
     const response = await this.client.directions({
       params: {

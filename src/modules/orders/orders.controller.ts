@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order } from './entities/order.entity';
-import { OrderPoint } from './entities/order-point.entity';
 import { Route } from '../directions/direction.service';
 import { TakeOrderDto } from './dto/take-order.dto';
 
@@ -49,18 +41,17 @@ export class OrdersController {
     return this.ordersService.findByDriver(driverName);
   }
 
-  @Post(':id/optimize')
+  @Post(':driverName/optimize')
   @ApiOperation({ summary: 'Optimize route for an order' })
   @ApiResponse({
     status: 200,
     description: 'Route optimized successfully',
-    type: [OrderPoint],
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
   optimizeRoute(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('driverName') driverName: string,
     @Body() takeOrderDto: TakeOrderDto,
   ): Promise<{ mapsUrl: string; routes: Route[] }> {
-    return this.ordersService.optimizeRoute(id, takeOrderDto);
+    return this.ordersService.optimizeRoute(driverName, takeOrderDto);
   }
 }
