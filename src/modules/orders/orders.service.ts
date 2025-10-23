@@ -26,6 +26,18 @@ export class OrdersService implements OnModuleInit {
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const { orderPoints, ...orderData } = createOrderDto;
 
+    const existingOrder = await this.orderRepository.findOne({
+      where: {
+        driverName: orderData.driverName,
+        status: OrderStatus.PENDING,
+      },
+      relations: ['orderPoints'],
+    });
+
+    if (existingOrder) {
+      await this.remove(existingOrder);
+    }
+
     // Create the order
     const order = this.orderRepository.create({
       ...orderData,
@@ -89,6 +101,16 @@ export class OrdersService implements OnModuleInit {
       },
     });
 
+    await this.orderPointRepository.save(
+      order.orderPoints.map((point) => {
+        return {
+          id: point.id,
+          originalIndex:
+            response.data.routes[0].waypoint_order[point.originalIndex],
+        };
+      }),
+    );
+
     const routes = response.data.routes[0].legs.map((leg) => ({
       from: leg.start_address,
       to: leg.end_address,
@@ -108,5 +130,10 @@ export class OrdersService implements OnModuleInit {
       .join('|')}&travelmode=driving`;
 
     return { mapsUrl, routes };
+  }
+
+  async remove(order: Order): Promise<void> {
+    await this.orderPointRepository.remove(order.orderPoints);
+    await this.orderRepository.delete(order.id);
   }
 }
